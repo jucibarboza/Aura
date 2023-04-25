@@ -1,0 +1,58 @@
+***CLASS APEX***
+
+public class OpportunityC {
+    @AuraEnabled
+    public static List<Opportunity> getOpportunitiesNR(){
+        return [SELECT Name, Amount, StageName, CloseDate FROM Opportunity WHERE StageName = 'Negotiation/Review' ORDER BY CreatedDate DESC LIMIT 5];
+    }
+}
+
+***COMPONENTE***
+<aura:component controller='OpportunityC' implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:attribute name="opps" type="Opportunity[]" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:card iconName="standard:opportunity" title="Oportunidades em Negociação">
+        <div class="slds-p-around_medium">
+            <aura:iteration items="{!v.opps}"  var="opportunity">
+                <p>-----------------------</p>
+                <p>Name: {!opportunity.Name}</p>
+                <p>Amount: {!opportunity.Amount}</p>
+                <p>Stage Name: {!opportunity.StageName}</p>
+                <p>Close Date: {!opportunity.CloseDate}</p>
+            </aura:iteration>
+        </div>
+    </lightning:card>
+</aura:component>
+
+***HELPER***
+
+({
+    getOpportunities: function(component) {
+        // Usando o método da classe do Apex OpportunityC
+        // Atribuindo esse método dentro de um componente
+        let action = component.get("c.getOpportunitiesNR");
+        
+        // Response faz um teste com o servidor e obtém uma resposta positiva dele
+        // SetCallback define a função de retorno de uma chamada que é executada
+        // após o retorno de uma ação do Apex
+        action.setCallback(this, function(response){
+            // A função setCallback obtém um resultado positivo da consulta no servidor.
+            // "SUCCESS", "ERROR" e "INCOMPLETE".
+            let state = response.getState();
+            console.log(state);
+            
+            // Verifica se o estado (Status) é positivo, caso seja, ele vai atribuir um valor para
+            // a variável que eu preciso preencher
+            if(state === "SUCCESS"){
+                component.set("v.opps", response.getReturnValue());
+                console.log(response.getReturnValue());
+            }
+        });
+        
+        // Da acesso à biblioteca do Aura e enfileira as ações do front do servidor
+        $A.enqueueAction(action);
+    }
+})
+
+***CONTROLER***
