@@ -1,0 +1,68 @@
+****COMPONENTE****
+
+<aura:component controller='AccountC' implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+	<aura:attribute name="acc" type="Account[]"></aura:attribute>
+    <!-- Em qual tempo você quer que eu realiza todo o precesso que você estabilizou dentro das ações e do helper -->
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <lightning:card iconName="standard:account" title="Clientes Contactados">
+    
+        <div class="slds-p-arround_medium">
+        
+      
+            <aura:iteration items="{!v.acc}"  var="account">
+                
+            <p>-----------------------</p>
+              	  <p>{!account.Name}</p>
+                  <p>{!account.Negociacao__c}</p>
+                  <p>{!account.Rating}</p>
+             
+              </aura:iteration>
+                
+            
+        </div>
+    
+    </lightning:card>
+    
+</aura:component>
+
+****HELPER****
+
+({
+    getAccounts : function(component) {
+        //usando o método da classe do APEX OpportunityC
+        //Atribuindo esse método dentro de um componente
+        let action = component.get("c.getAccountsNR");
+        //response faz um teste com o servidor e obtem uma resposta positiva dele
+        //setCallback define a função de retorno de uma chamada que é executada
+        //apos o retorno de uma ação do apex
+        
+        action.setCallback(this, function(response){
+          //a função setCallback obtem um resultado positivo da consulta no servidor.
+           //"SUCCESS", "ERROR" e "INCOMPLETE".
+           let state = response.getState();
+            console.log(state);
+            
+            //verifica se o estado (Status) é positivo, caso seja, ele vai atribuir um valor para
+            //a variavel que eu preciso preencher
+            if(state === "SUCCESS"){
+                component.set("v.acc", response.getReturnValue());
+                console.log(response.getReturnValue());
+            }
+                                               
+        });
+        
+        //da acesso a biblioteca do Aura e enfileira as ações do front do servidor
+        $A.enqueueAction(action);
+		
+    }
+})
+
+****CONTROLER****
+
+({
+	doInit : function(component, event, helper) {
+		helper.getAccounts(component);
+	}
+})
