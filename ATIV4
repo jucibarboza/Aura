@@ -1,0 +1,82 @@
+****COMPONENTE***
+
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+        
+    
+    <aura:attribute name="pageReference" type="Object"/>
+    <lightning:navigation aura:id="navService"/>
+    
+    <lightning:card iconName= "standard:user"  title="Lista de compra Material para Escritório"/>
+     <div class="slds-box slds-theme_default">
+    
+        <lightning:recordEditForm aura:id="recordEditForm"
+                                  objectApiName="MaterialEscritorio__c"
+                                  onsuccess="{!c.handleSuccess}">
+                      
+                       <lightning:inputField fieldName="Nome_do_produto__c" aura:id="field"/>
+                       <lightning:inputField fieldName="Data_de_compra__c" aura:id="field"/>
+                       <lightning:inputField fieldName="Preco_unitario__c" aura:id="field"/>
+                       <lightning:inputField fieldName="Quantidade__c" aura:id="field"/>
+                       <lightning:inputField fieldName="Preco_total__c" aura:id="field"/>
+                     
+               		   <lightning:button class="slds-m-top_small" onclick="{!c.handleReset}" label="Limpar"/>
+            		   <lightning:button class="slds-m-top_small" type="submit" label="Criar novo item"/>
+           			   <lightning:button variant="brand" type="submit" label="Salvar"/>
+         </lightning:recordEditForm>
+            </div>
+         
+        </aura:component>
+        
+        *****HELPER *****
+        
+        ({
+    showToast: function(component, event, helper) {
+        var toastEvent = $A.get("e.force:showToast");
+        toastEvent.setParams({
+            "title": "Produto adicionado à lista.",
+            "message": "Item criado com sucesso.",
+            "type": "Success"
+        });
+        
+        toastEvent.fire();
+
+        var registroCriado = event.getParams();
+        console.log(registroCriado.response.id);
+
+        var pageReference = {
+            "type": 'standard__recordPage',
+            "attributes": {
+                "recordId": registroCriado.response.id,
+                "actionName": "view",
+                "objectApiName": "MaterialEscritorio__c"
+            }
+
+        };
+
+        console.log(pageReference);
+
+        component.set("v.pageReference", pageReference);
+        var redirect = component.get("v.pageReference");
+        var navService = component.find("navService");
+        navService.navigate(redirect);
+
+    },
+    handleReset: function(cmp) {
+        cmp.find('field').forEach(function(f) {
+            f.reset();
+        });
+    }
+})
+
+
+****CONTROLER*****
+
+({
+    showToast: function(component, event, helper) {
+        helper.showToast(component, event, helper);
+    },
+
+    handleReset: function(component, event, helper) {
+        helper.handleReset(component, event, helper);
+    }
+})
